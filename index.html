@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nested For Loops - Mathematical Table Generator</title>
+    <style>
+        /* Import Poppins Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        /* Color System & CSS Variables */
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --panel-bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #cbd5e1;
+            
+            /* Equation Colors */
+            --math-blue: #3b82f6;      /* Cool blue */
+            --math-gray: #4b5563;      /* Dark gray */
+            --math-green: #10b981;     /* Bright green */
+
+            /* Shadows & Depth */
+            --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Center the sleek control panel at the top on a light gray background */
+        .control-panel {
+            background-color: var(--panel-bg);
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 40px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* Modern styled inputs & dropdown */
+        .control-panel input,
+        .control-panel select {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            outline: none;
+            height: 48px;
+            min-width: 150px;
+            flex: 1;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .control-panel input:focus,
+        .control-panel select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .control-panel input::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Select element dropdown adjustment */
+        .control-panel select {
+            min-width: 200px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234b5563' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        /* Option element styling inside select dropdown */
+        .control-panel select option {
+            background-color: #ffffff;
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            padding: 8px;
+        }
+
+        /* Create Table Button Styling */
+        .control-panel button {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 28px;
+            cursor: pointer;
+            height: 48px;
+            white-space: nowrap;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1);
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .control-panel button:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .control-panel button:active {
+            transform: scale(0.98);
+        }
+
+        /* Output Display Layout Container */
+        #display {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: start;
+            gap: 24px;
+        }
+
+        /* Each outer loop table-row container sits side-by-side and displays items vertically */
+        .table-row {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 0 1 auto;
+            min-width: 180px;
+        }
+
+        /* Header styling for each table column */
+        .table-header {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 4px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        /* Uniform card styles for dynamically generated <p> items */
+        .table-row p {
+            background-color: var(--card-bg);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 20px;
+            margin: 0;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 180px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .table-row p:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Inner equation elements styling */
+        .math-num {
+            color: var(--math-blue);
+            font-weight: 600; /* slightly bold */
+        }
+
+        .math-op {
+            color: var(--math-gray);
+            font-weight: 500;
+        }
+
+        .math-eq {
+            color: #94a3b8;
+        }
+
+        .math-res {
+            color: var(--math-green);
+            font-weight: 700; /* bold */
+        }
+
+        /* Empty placeholder layout */
+        #display:empty::after {
+            content: "No grid generated yet. Adjust rows and columns, then click 'Create Table'.";
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            border: 2px dashed #cbd5e1;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            width: 100%;
+            display: block;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            .control-panel {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 20px;
+            }
+
+            .control-panel input,
+            .control-panel select,
+            .control-panel button {
+                width: 100%;
+                min-width: unset;
+            }
+
+            #display {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .table-row {
+                width: 100%;
+                max-width: 320px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="control-panel">
+        <input type="number" placeholder="Enter Rows" id="firstNumber">
+        <input type="number" placeholder="Enter Columns" id="secondNumber">
+
+        <select name="" id="selectOptions" style="color:rgb(138, 160, 161) ;">
+            <option value="add">Addition ( + )</option>
+            <option value="subtract">Subtraction ( - )</option>
+            <option value="multiply">Multiplication ( × )</option>
+            <option value="divide">Division ( ÷ )</option>
+        </select>
+
+        <button onclick="createTable()">Create Table</button>
+    </div>
+
+    <div id="display"></div>
+</body>
+
+<script>
+    // for (let i=1; i<=10;i++){
+    //     // console.log(i);
+    //     for (j=1; j<=24; j++){
+    //         for(k=1; k<=4; k++){
+    //             console.log(`carton: ${i}, biscuit: ${j} has ${k} of biscuits`);
+    //         }
+
+    //     }
+    // }
+
+    // let students= ["Ayo", "Bola", "Kemi", "Tunde", "Femi"]
+    // let items= ["Pen", "Pencil", "Calculator", "bag", "Lunchbox"]
+
+    // for(let i=0; i<students.length;i++){
+    //     const element=students[i]
+    //     console.log(element);
+
+    //     for(let high=0; high<items.length; high++){
+    //         const newElement=items[high];
+    //         console.log(newElement);
+
+    //     }
+
+    // }
+
+
+    // for(let i=1; i<=12; i++){
+    //     for (let j=1; j<=12; j++){
+    //         console.log(`${i} x ${j} = ${i*j}`);
+
+    //     }
+    // }
+
+
+
+
+    function createTable() {
+        const rows = Number(firstNumber.value);
+        const columns = Number(secondNumber.value);
+        const selectOne = selectOptions.value;
+
+        // Clear display first
+        display.innerHTML = '';
+
+        for (let i = 1; i <= rows; i++) {
+            // Restructured HTML output: wrap each row's items in a row container with a header
+            let rowHTML = `<div class="table-row">`;
+            rowHTML += `<h3 class="table-header">Table ${i}</h3>`;
+            for (let j = 1; j <= columns; j++) {
+                if (selectOne == "add") {
+                    console.log(`${i} + ${j} = ${i + j}`);
+                    rowHTML += `<p><span class="math-num">${i}</span> <span class="math-op">+</span> <span class="math-num">${j}</span> <span class="math-eq">=</span> <span class="math-res">${i + j}</span></p>`;
+                } else if (selectOne == "multiply") {
+                    console.log(`${i} x ${j} = ${i * j}`);
+                    rowHTML += `<p><span class="math-num">${i}</span> <span class="math-op">x</span> <span class="math-num">${j}</span> <span class="math-eq">=</span> <span class="math-res">${i * j}</span></p>`;
+                } else if (selectOne == "subtract") {
+                    console.log(`${i} -- ${j} = ${i - j}`);
+                    rowHTML += `<p><span class="math-num">${i}</span> <span class="math-op">--</span> <span class="math-num">${j}</span> <span class="math-eq">=</span> <span class="math-res">${i - j}</span></p>`;
+                } else if (selectOne == "divide") {
+                    console.log(`${i} / ${j} = ${i / j}`);
+                    // Maintain mathematical logic exactly, formatting the result value cleanly for floats
+                    const rawResult = i / j;
+                    const formattedResult = Number.isInteger(rawResult) ? rawResult : rawResult.toFixed(2);
+                    rowHTML += `<p><span class="math-num">${i}</span> <span class="math-op">/</span> <span class="math-num">${j}</span> <span class="math-eq">=</span> <span class="math-res">${formattedResult}</span></p>`;
+                }
+            }
+            rowHTML += `</div>`;
+            display.innerHTML += rowHTML;
+        }
+    }
+</script>
+
+</html>
